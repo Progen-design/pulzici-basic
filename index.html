@@ -508,7 +508,11 @@ function startCountdown(){
  statusText.textContent='Nácvik hotov! Za 3 sekundy začíná ostrý zápas.';game.sounds.push({kind:'tutorial'});
 }
 function updateTutorialUI(){
- const steps=[
+ const steps=touchDevice?[
+  ['Rozpohybuj Pulzíka','Klepni na volné místo v aréně. Pulzík se tam začne pohybovat.'],
+  ['Natáhni se','Přidrž prst na aréně alespoň jednu sekundu. Uvidíš nabíjení.'],
+  ['Vystřel!','Pusť prst z obrazovky. Pulzík vystřelí a začne zápas.']
+ ]:[
   ['Rozpohybuj Pulzíka','Použij šipky na klávesnici nebo páčku ovladače. Posuň se po aréně.'],
   ['Natáhni se','Podrž MEZERNÍK nebo A na ovladači alespoň půl sekundy.'],
   ['Vystřel!','Pusť MEZERNÍK nebo A na ovladači a sleduj výpad. Potom začne zápas.']
@@ -757,6 +761,7 @@ function renderHUD(){
 }
 function showResult(){
  if(!endCard.classList.contains('hidden'))return;
+ resetTouch();
  const sorted=[...game.players].sort((a,b)=>b.score-a.score);
  $('#winnerTitle').textContent=game.winner;
  $('#resultSummary').textContent=game.winner==='REMÍZA'?`Dva nebo více Pulzíků mají ${sorted[0].score} bodů. Rozhodne odveta!`:`Nejvíce bodů: ${sorted[0].score}. Chceš zkusit odvetu?`;
