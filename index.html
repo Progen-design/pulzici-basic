@@ -42,13 +42,25 @@
 @media(max-width:850px){.tutorial-card{top:40px;max-width:60%;padding:13px}.tutorial-card h3{font-size:14px}.tutorial-card p{font-size:10px}.tutorial-skip{font-size:10px}}
 @media(max-width:520px){.tutorial-card{top:36px;left:5px;padding:8px 10px;width:65%;max-width:65%;border-radius:9px}.tutorial-top{font-size:8px}.tutorial-top span:last-child{display:none}.tutorial-track{height:3px;margin:5px 0}.tutorial-card h3{font-size:11px;margin-bottom:3px}.tutorial-card p{font-size:9px;line-height:1.3;margin-bottom:0}.tutorial-skip{font-size:8px;padding:3px 0}.end-card,.paused-card{padding:13px 10px}.end-card h3{font-size:19px;margin:6px 0}.result-ranking{gap:2px;margin-bottom:7px}.result-ranking>div{padding:4px 7px;font-size:9px}}
 @media(prefers-reduced-motion:reduce){.tutorial-track i,.primary-button,.toast,.mode-option{transition:none!important}}
+
+/* Dotykové ovládání: klepnutí = cíl, podržení = nabíjení, puštění = výstřel. */
+.game-frame canvas{touch-action:none;-webkit-user-select:none;user-select:none}
+.touch-guide{display:none;padding:9px 12px;text-align:center;border-radius:10px;background:#1d2b3e;color:#8ff4dd;font-weight:800;font-size:12px;margin:9px 0 0}
+.touch-device .touch-guide{display:block}
+.touch-start-button{display:none!important;margin:15px auto 0;max-width:330px;justify-content:center}
+.touch-device .touch-start-button{display:flex!important}
+.touch-device .center-message .message-control{display:none}
+.touch-target{position:absolute;z-index:4;pointer-events:none;width:42px;height:42px;border-radius:50%;border:3px solid #82f5dd;box-shadow:0 0 10px #5aeddcb9,inset 0 0 9px #6dedc488;background:radial-gradient(circle,#6effdd58 0 4px,transparent 5px);transform:translate(-50%,-50%);opacity:.75}
+.touch-target.charging{background:conic-gradient(#87fbdf var(--charge-progress,0%),#172640b8 0);border-color:#fff0ae;box-shadow:0 0 14px #ffeca8}
+.touch-device .game-frame canvas{cursor:crosshair}
+@media(max-width:650px){.touch-guide{font-size:12px;line-height:1.5}.touch-device .play-area{padding:8px}.touch-device .arena-header{padding-bottom:10px}.touch-device .game-frame{border-width:1px}.touch-device .touch-start-button{min-height:42px;padding:10px 14px}}
 </style>
 </head>
 <body>
 <div class="app-shell">
 <header class="masthead">
 <div class="brand"><div aria-hidden="true" class="brand-mark"><span></span><span></span></div><div><strong>PULZÍCI BASIC<span class="brand-star">*</span></strong><small>FYZIKÁLNÍ PARTY HRA</small></div></div>
-<div class="top-right"><span class="state"><span class="pulse-dot"></span> BASIC / HRATELNÁ UKÁZKA · v0.8</span><span class="connection">BEZ ONLINE SLUŽEB</span></div>
+<div class="top-right"><span class="state"><span class="pulse-dot"></span> BASIC / HRATELNÁ UKÁZKA · v0.9</span><span class="connection">BEZ ONLINE SLUŽEB</span></div>
 </header>
 <main class="layout">
 <aside class="panel settings">
@@ -82,12 +94,14 @@
 <div class="game-frame" id="gameFrame">
 <div aria-live="polite" class="top-hud"><div class="hud-round"><span>KOLO</span><b>01</b></div><div class="hud-time"><span>ZBÝVÁ</span><b id="timer">01:30</b></div><div class="hud-gamepad" id="gamepadsStatus">🎮 OVLADAČE: 0</div></div>
 <canvas aria-label="Hra PULZÍCI. Hráč na klávesnici používá šipky k pohybu a mezerník pro nabití a výstřel. Ostatní používají vlastní gamepady." height="680" id="gameCanvas" tabindex="0" width="1100"></canvas>
+<div aria-hidden="true" class="touch-target hidden" id="touchTarget"></div>
 <div aria-live="polite" class="toast" id="gameToast"></div>
 <div class="center-message" id="introMessage">
 <span class="message-overline">JEDEN REŽIM · JEDNA ARÉNA</span>
 <div class="message-title">PŘIPRAV SE NA SOUBOJ!</div>
 <div class="message-sub">Pohybuj se, podrž akci a pusť ji. Krátký nácvik tě to naučí přímo ve hře. Potom máš 90 sekund na vítězství.</div>
 <div class="message-control"><span class="keycap">↑</span><span class="keycap">←</span><span class="keycap">↓</span><span class="keycap">→</span> POHYB <span class="keycap wide">MEZERNÍK</span> DRŽ &amp; PUSŤ</div>
+<button id="touchStartButton" class="primary-button touch-start-button" type="button">▶ HRÁT NA TELEFONU</button>
 </div>
 <div class="tutorial-card hidden" id="tutorialCard" aria-live="polite">
  <div class="tutorial-top"><span id="tutorialStep">KROK 1 / 3</span><span>ÚVODNÍ NÁCVIK</span></div>
@@ -103,6 +117,7 @@
 <div class="paused-card hidden" id="pausedCard"><h3>PAUZA</h3><p>Stiskni Esc nebo klikni na Pokračovat.</p><button class="primary-button" id="resumeButton">POKRAČOVAT ▶</button></div>
 </div>
 <div aria-label="Průběžné skóre" class="scoreboard" id="scoreboard"></div>
+<div class="touch-guide" id="touchGuide">KLEPNI DO ARÉNY = POHYB · PODRŽ = NABÍJENÍ · PUSŤ = VÝSTŘEL</div>
 <div class="bottom-strip"><div><span class="indicator"></span> <span id="statusText">Připraveno na zábavnou odvetu</span></div><div class="controls-text">KLÁVESNICE <b>ŠIPKY + MEZERNÍK</b> <i> / </i> DALŠÍ HRÁČI <b>VLASTNÍ GAMEPAD – PÁČKA + A</b></div></div>
 </section>
 </main>
@@ -377,6 +392,46 @@ let lastFrame=0,accumulator=0,lastUI=0,enabledSound=true,audioCtx=null;
 let tutorialCompleted=false,tutorialStage=0,tutorialStart={x:0,y:0};
 let padSlots={0:null,1:null,2:null,3:null};
 const keys=new Set();
+// Mobilní Pointer Events fungují na Chrome/Android a Safari/iOS.
+const touchDevice=!!(navigator.maxTouchPoints>0||(window.matchMedia&&matchMedia('(pointer:coarse)').matches));
+document.body.classList.toggle('touch-device',touchDevice);
+const touchTarget=$('#touchTarget'),touchGuide=$('#touchGuide');
+const touchControl={id:null,pressed:false,goal:false,x:0,y:0,startedAt:0};
+const TOUCH_HOLD_MS=300;
+function resetTouch(clearGoal=true,cancelCharge=true){
+ touchControl.id=null;touchControl.pressed=false;
+ if(clearGoal){touchControl.goal=false;touchTarget.classList.add('hidden');}
+ if(cancelCharge&&game?.players?.[0]){
+  const p=game.players[0];p.actionWasDown=false;p.charge=0;p.attached=-1;
+ }
+}
+function pointInWorld(e){
+ const b=canvas.getBoundingClientRect();
+ const fit=Math.min(b.width/WORLD.w,b.height/WORLD.h);
+ const visibleWidth=WORLD.w*fit,visibleHeight=WORLD.h*fit;
+ const left=b.left+(b.width-visibleWidth)/2,top=b.top+(b.height-visibleHeight)/2;
+ return {x:clamp((e.clientX-left)/fit,15,WORLD.w-15),y:clamp((e.clientY-top)/fit,15,WORLD.h-15)};
+}
+function touchPlayable(){return started&&!paused&&(game.phase==='playing'||game.phase==='tutorial')&&game.players[0].human;}
+function touchInput(p,timestamp=performance.now()){
+ const action=touchControl.pressed&&timestamp-touchControl.startedAt>=TOUCH_HOLD_MS;
+ const dx=touchControl.x-p.x,dy=touchControl.y-p.y,dist=Math.hypot(dx,dy);
+ if(dist<12)return {x:clamp(-p.vx/210,-1,1),y:clamp(-p.vy/210,-1,1),action};
+ const speed=Math.min(300,Math.max(50,(dist-12)*2.6));
+ return {x:clamp((dx/dist*speed-p.vx)/300,-1,1),y:clamp((dy/dist*speed-p.vy)/300,-1,1),action};
+}
+function updateTouchGuide(){
+ if(!touchDevice||!touchControl.goal)return;
+ const b=canvas.getBoundingClientRect(),fit=Math.min(b.width/WORLD.w,b.height/WORLD.h);
+ const x=(b.width-WORLD.w*fit)/2+touchControl.x*fit;
+ const y=(b.height-WORLD.h*fit)/2+touchControl.y*fit;
+ touchTarget.style.left=x+'px';touchTarget.style.top=y+'px';
+ const held=touchControl.pressed&&touchPlayable()&&performance.now()-touchControl.startedAt>=TOUCH_HOLD_MS;
+ const charge=held?Math.min(100,Math.round(game.players[0].charge/1.1*100)):0;
+ touchTarget.classList.toggle('charging',held);
+ touchTarget.style.setProperty('--charge-progress',charge+'%');
+ touchGuide.textContent=held?'NABÍJÍŠ: '+charge+' % · PUSŤ PRST PRO VÝSTŘEL':'KLEPNI = POHYB · PODRŽ = NABIJ · PUSŤ = VÝSTŘEL';
+}
 function connectedPads(){
  if(typeof navigator.getGamepads!=='function')return [];
  try{return [...navigator.getGamepads()].map((pad,index)=>pad?.connected?{pad,index}:null).filter(Boolean);}catch{return [];}
@@ -435,7 +490,8 @@ function startGame({forceTutorial=false,skipTutorial=false}={}){
  statusText.textContent=needsTutorial?'Nácvik: učíme se pohyb, nabití a výstřel.':'Připraveno! Za chvíli začneme.';
  if(humans<requested)statusText.textContent='Chybí ovladače, volná místa hrají boti.';
  $('#startButton').textContent='↻ RESTARTOVAT HRU';
- audioReady();lastFrame=performance.now();renderHUD();canvas.focus({preventScroll:true});
+ resetTouch();audioReady();lastFrame=performance.now();renderHUD();canvas.focus({preventScroll:true});
+ if(touchDevice){gameFrame.scrollIntoView({behavior:'smooth',block:'center'});}
 }
 function beginMatch(){
  resetRound(game);game.phase='playing';game.remaining=90;game.t=0;game.banner='START! +1 BOD ZA VYTLAČENÍ';game.bannerTimer=2.1;
@@ -470,6 +526,7 @@ function progressTutorial(){
  if(tutorialStage===2&&p.charges>0)startCountdown();
 }
 $('#startButton').addEventListener('click',()=>startGame({skipTutorial:tutorialCompleted}));
+$('#touchStartButton').addEventListener('click',()=>startGame({skipTutorial:tutorialCompleted}));
 $('#playAgainButton').addEventListener('click',()=>startGame({skipTutorial:true}));
 $('#helpButton').addEventListener('click',()=>startGame({forceTutorial:true}));
 $('#skipTutorialButton').addEventListener('click',()=>startCountdown());
@@ -477,7 +534,7 @@ function pauseToggle(force){
  if(!started||game.phase==='ended')return;
  const next=typeof force==='boolean'?force:!paused;
  if(next===paused)return;
- paused=next;keys.clear();
+ paused=next;keys.clear();if(paused)resetTouch();
  pausedCard.classList.toggle('hidden',!paused);
  if(paused){tutorialCard.classList.add('hidden');countdownOverlay.classList.add('hidden');}
  else{
@@ -520,8 +577,37 @@ window.addEventListener('keydown',handleGameKeydown,{capture:true});
 window.addEventListener('keyup',handleGameKeyup,{capture:true});
 window.addEventListener('keypress',e=>{if(controlsActive(e)&&gameKeys.has(e.code)){e.preventDefault();e.stopPropagation();}},{capture:true});
 window.addEventListener('blur',()=>keys.clear());
-document.addEventListener('visibilitychange',()=>{if(document.hidden)keys.clear();});
-canvas.addEventListener('pointerdown',()=>canvas.focus({preventScroll:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();resetTouch();}});
+function finishTouch(e,cancel=false){
+ if(e.pointerId!==touchControl.id)return;
+ if(e.cancelable)e.preventDefault();
+ touchControl.pressed=false;touchControl.id=null;
+ if(cancel)resetTouch(true,true);
+ try{if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);}catch{}
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(e.pointerType!=='touch'&&e.pointerType!=='pen'){canvas.focus({preventScroll:true});return;}
+ if(!touchPlayable()||touchControl.id!==null)return;
+ if(e.cancelable)e.preventDefault();
+ const point=pointInWorld(e);
+ touchControl.id=e.pointerId;touchControl.pressed=true;touchControl.goal=true;
+ touchControl.x=point.x;touchControl.y=point.y;touchControl.startedAt=performance.now();
+ touchTarget.classList.remove('hidden');
+ try{canvas.setPointerCapture(e.pointerId);}catch{}
+ updateTouchGuide();
+},{passive:false});
+canvas.addEventListener('pointermove',e=>{
+ if(touchControl.id!==e.pointerId)return;
+ if(e.cancelable)e.preventDefault();
+ const point=pointInWorld(e);touchControl.x=point.x;touchControl.y=point.y;
+ updateTouchGuide();
+},{passive:false});
+canvas.addEventListener('pointerup',e=>finishTouch(e,false),{passive:false});
+canvas.addEventListener('pointercancel',e=>finishTouch(e,true),{passive:false});
+canvas.addEventListener('lostpointercapture',e=>{
+ if(e.pointerId===touchControl.id)resetTouch(true,true);
+});
+window.addEventListener('blur',()=>resetTouch());
 humanCount.addEventListener('change',()=>{if(started&&!paused)canvas.focus({preventScroll:true});});
 difficultySelect.addEventListener('change',()=>{
  const level=DIFFICULTY_SETTINGS[difficultySelect.value]?difficultySelect.value:'easy';
@@ -548,9 +634,10 @@ function pollInputs(){
   const slot=padSlots[i],pad=slot===null?null:allPads[slot];
   if(i===0){
    const kb=keyboardInput(i);
+   if(keys.size>0&&touchControl.goal){touchControl.goal=false;touchTarget.classList.add('hidden');}
    if(pad?.connected){const gp=gamepadInput(pad);
-    if(Math.hypot(gp.x,gp.y)>.12||gp.action)return gp;}
-   return kb;
+    if(Math.hypot(gp.x,gp.y)>.12||gp.action){touchControl.goal=false;touchTarget.classList.add('hidden');return gp;}}
+   return touchControl.goal?touchInput(p):kb;
   }
   return pad?.connected?gamepadInput(pad):botInput(game,p,1/60);
  });
@@ -696,7 +783,7 @@ function loop(timestamp){
    if(game.countdown<=0)beginMatch();
   }
  }
- playSounds();draw(game,timestamp/1000);
+ updateTouchGuide();playSounds();draw(game,timestamp/1000);
  if(timestamp-lastUI>120){renderHUD();updatePadStatus();lastUI=timestamp;}
  requestAnimationFrame(loop);
 }
