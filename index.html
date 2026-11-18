@@ -48,7 +48,7 @@
 <div class="app-shell">
 <header class="masthead">
 <div class="brand"><div aria-hidden="true" class="brand-mark"><span></span><span></span></div><div><strong>PULZÍCI BASIC<span class="brand-star">*</span></strong><small>FYZIKÁLNÍ PARTY HRA</small></div></div>
-<div class="top-right"><span class="state"><span class="pulse-dot"></span> BASIC / HRATELNÁ UKÁZKA · v0.7</span><span class="connection">BEZ ONLINE SLUŽEB</span></div>
+<div class="top-right"><span class="state"><span class="pulse-dot"></span> BASIC / HRATELNÁ UKÁZKA · v0.8</span><span class="connection">BEZ ONLINE SLUŽEB</span></div>
 </header>
 <main class="layout">
 <aside class="panel settings">
@@ -70,6 +70,8 @@
 </div>
 <div class="section-title players-title"><span>02</span> NASTAVENÍ HRÁČŮ</div>
 <div class="selector-row"><label for="humanCount">Lidských hráčů</label><select aria-label="Počet lidských hráčů" id="humanCount"><option selected="" value="1">1 hráč + 3 boti</option><option value="2">2 hráči (1 gamepad) + 2 boti</option><option value="3">3 hráči (2 gamepady) + 1 bot</option><option value="4">4 hráči (3 gamepady)</option></select></div>
+<div class="selector-row"><label for="difficultySelect">Obtížnost botů</label><select aria-label="Obtížnost počítačových soupeřů" id="difficultySelect"><option selected="" value="easy">Lehká – pro začátečníky</option><option value="medium">Střední – normální soupeři</option><option value="hard">Těžká – výzva</option></select></div>
+<p class="input-hint" id="difficultyDescription" aria-live="polite">Lehká: boti jsou pomalejší, později reagují a méně útočí. Ideální pro první hraní.</p>
 <p class="input-hint">Klávesnice: šipky pro pohyb, MEZERNÍK pro nabití a výstřel. Na jednom PC může tuto klávesnici používat jeden hráč. Další hráči potřebují každý vlastní gamepad (páčka + A). Bez ovladače hraje místo nich bot.</p>
 <button class="primary-button" id="startButton" type="button"><span>▶</span> VYZKOUŠET A HRÁT <span class="right-arrow">↗</span></button>
 <button class="secondary-button" id="helpButton" type="button">ⓘ Zopakovat herní nácvik</button>
@@ -113,6 +115,11 @@ const COLORS = ['#68f6d3','#fa897e','#a58aff','#ffd477'];
 const MODES = Object.freeze({
  ring: {label:'Nárazovka',short:'+1 bod za vytlačení soupeře',seconds:90}
 });
+const DIFFICULTY_SETTINGS = Object.freeze({
+ easy:   {label:'Lehká',  reaction:1.20, aimError:.75, botSpeed:.36, rest:3.40, hold:.47, hesitation:.33},
+ medium: {label:'Střední',reaction:.55, aimError:.32, botSpeed:.70, rest:1.70, hold:.68, hesitation:.13},
+ hard:   {label:'Těžká', reaction:.18, aimError:.08, botSpeed:1.00, rest:.70,  hold:.97, hesitation:.03}
+});
 function clamp(v,a,b) {return Math.min(b,Math.max(a,v));}
 function length(x,y) {return Math.hypot(x,y);}
 function unit(x,y) {const l=length(x,y)||1;return {x:x/l,y:y/l};}
@@ -136,15 +143,15 @@ const SPAWNS=[[330,220],[770,460],[330,460],[770,220]];
 const ANCHORS=[[165,145],[935,145],[165,535],[935,535]];
 function createPlayer(i, humans) {
  const [x,y]=SPAWNS[i];
- const p={id:i,x,y, vx:0,vy:0,r:30,mass:1, color:COLORS[i],human:i<humans,score:0,wins:0,charges:0,charge:0,attached:-1,actionWasDown:false,cooldown:0,aimX:i%2===0?1:-1,aimY:0,respawn:0, invuln:0,lastHit:-1, hitAge:0,squash:0,dashTimer:0,hitPulse:0, wobble:Math.random()*10,nodes:[],botTimer:0,botAction:false};
+ const p={id:i,x,y, vx:0,vy:0,r:30,mass:1, color:COLORS[i],human:i<humans,score:0,wins:0,charges:0,charge:0,attached:-1,actionWasDown:false,cooldown:0,aimX:i%2===0?1:-1,aimY:0,respawn:0, invuln:0,lastHit:-1, hitAge:0,squash:0,dashTimer:0,hitPulse:0, wobble:Math.random()*10,nodes:[],botThink:0,botMoveX:0,botMoveY:0,botRestTime:.6+i*.2,botHoldTime:0,botAction:false};
  for(let j=0;j<10;j++) {const angle=j*Math.PI*2/10; p.nodes.push({x:x+Math.cos(angle)*p.r,y:y+Math.sin(angle)*p.r,vx:0,vy:0});}
  return p;
 }
 function createSparks() {return [[550,240],[550,440],[390,340],[710,340],[290,190],[810,490],[290,490],[810,190]].map(([x,y],i)=>({x,y,r:13,active:true,respawn:0,id:i}));}
-function createGame(mode='ring',humans=1) {
+function createGame(mode='ring',humans=1,difficulty='easy') {
  if(!MODES[mode]) throw new Error('Neznámý herní režim');
  return {
-   mode, t:0,remaining:MODES[mode].seconds,phase:'ready',players:Array.from({length:4},(_,i)=>createPlayer(i,clamp(humans,1,4))),
+   mode, difficulty:DIFFICULTY_SETTINGS[difficulty]?difficulty:'easy', t:0,remaining:MODES[mode].seconds,phase:'ready',players:Array.from({length:4},(_,i)=>createPlayer(i,clamp(humans,1,4))),
    ball:{x:WORLD.cx,y:WORLD.cy,vx:0,vy:0,r:21,mass:.55}, teamScore:[0,0],
    anchors:ANCHORS.map(([x,y])=>({x,y,r:27})), sparks:createSparks(), particles:[], banner:'',bannerTimer:0,
    events:[],winner:'',timeSinceGoal:0,seed:0.33,shake:0,flash:0,rings:[],floaters:[],sounds:[],lastImpactSound:0,countdown:3.2
@@ -152,7 +159,7 @@ function createGame(mode='ring',humans=1) {
 }
 function resetRound(g) {
  g.players.forEach((p,i)=>{
-  const [x,y]=SPAWNS[i];p.x=x;p.y=y;p.vx=0;p.vy=0;p.attached=-1;p.charge=0;p.respawn=0;p.invuln=1;p.cooldown=.45;p.lastHit=-1;p.actionWasDown=false;p.dashTimer=0;p.squash=0;p.hitPulse=0;
+  const [x,y]=SPAWNS[i];p.x=x;p.y=y;p.vx=0;p.vy=0;p.attached=-1;p.charge=0;p.respawn=0;p.invuln=1;p.cooldown=.45;p.lastHit=-1;p.actionWasDown=false;p.dashTimer=0;p.squash=0;p.hitPulse=0;p.botThink=0;p.botHoldTime=0;p.botRestTime=.55+p.id*.2;p.botAction=false;p.botMoveX=0;p.botMoveY=0;
   p.nodes.forEach((n,k)=>{const a=k*Math.PI*2/10;n.x=x+Math.cos(a)*p.r;n.y=y+Math.sin(a)*p.r;n.vx=0;n.vy=0;});
  });
  g.ball.x=WORLD.cx;g.ball.y=WORLD.cy;g.ball.vx=0;g.ball.vy=0;g.timeSinceGoal=0;
@@ -175,24 +182,38 @@ function emit(g,x,y,color,n=6) {
 }
 function event(g,message) {g.banner=message;g.bannerTimer=1.9;g.events.push({at:Math.round(g.t*10)/10,text:message});if(g.events.length>30)g.events.shift();}
 function botInput(g,p,dt) {
- let target;
- if(g.mode==='ball') target=g.ball;
- else if(g.mode==='hill') target={x:550+Math.sin(g.t*.2+p.id)*45,y:340+Math.cos(g.t*.25+p.id)*35};
- else if(g.mode==='sparks') target=g.sparks.filter(s=>s.active).sort((a,b)=>distance(p,a)-distance(p,b))[0]||{x:550,y:340};
- else target=g.players.filter(o=>o!==p && !o.respawn).sort((a,b)=>distance(p,a)-distance(p,b))[0]||{x:550,y:340};
- const v=unit(target.x-p.x,target.y-p.y),distanceTarget=distance(p,target);
- p.botTimer-=dt;
- if(p.botTimer<=0) {p.botTimer=.8+Math.random()*1.5;p.botAction=true;}
- if(p.botAction && p.botTimer<.32) p.botAction=false;
- const randomJitter=Math.sin(g.t*1.8+p.id*3)*.26;
- return {x:v.x-randomJitter*v.y,y:v.y+randomJitter*v.x,action:p.botAction && distanceTarget>40};
+ const level=DIFFICULTY_SETTINGS[g.difficulty]||DIFFICULTY_SETTINGS.easy;
+ p.botThink-=dt;
+ if(p.botThink<=0) {
+  p.botThink=level.reaction*(.8+Math.random()*.4);
+  const opponents=g.players.filter(o=>o!==p && o.respawn<=0 && o.invuln<=0);
+  const target=opponents.sort((a,b)=>distance(p,a)-distance(p,b))[0]||{x:550,y:340};
+  const edge=Math.hypot((p.x-550)/425,(p.y-340)/239);
+  const tx=edge>.80?550:target.x, ty=edge>.80?340:target.y;
+  const aim=Math.atan2(ty-p.y,tx-p.x)+(Math.random()*2-1)*level.aimError;
+  const hesitation=Math.random()<level.hesitation;
+  p.botMoveX=hesitation?0:Math.cos(aim);
+  p.botMoveY=hesitation?0:Math.sin(aim);
+ }
+ if(p.botHoldTime>0) {
+  p.botHoldTime=Math.max(0,p.botHoldTime-dt);
+  p.botAction=p.botHoldTime>0;
+  if(!p.botAction)p.botRestTime=level.rest*(.75+Math.random()*.5);
+ } else if(p.botRestTime>0) {
+  p.botRestTime=Math.max(0,p.botRestTime-dt);
+  p.botAction=false;
+ } else {
+  p.botHoldTime=level.hold*(.85+Math.random()*.3);
+  p.botAction=true;
+ }
+ return {x:p.botMoveX,y:p.botMoveY,action:p.botAction,botSpeed:level.botSpeed};
 }
 function movePlayer(g,p,input,dt) {
  if(p.respawn>0) {p.respawn-=dt;if(p.respawn<=0){const pos=SPAWNS[p.id];p.x=pos[0];p.y=pos[1];p.vx=0;p.vy=0;p.invuln=1.7;p.lastHit=-1;p.hitAge=999;}return;}
  const d=unit(input.x||0,input.y||0), moving=Math.hypot(input.x||0,input.y||0)>.08;
  if(moving){p.aimX=d.x;p.aimY=d.y;}
  p.invuln=Math.max(0,p.invuln-dt);p.cooldown=Math.max(0,p.cooldown-dt);p.hitAge+=dt;
- let accel=620;
+ let accel=620*(Number.isFinite(input.botSpeed)?clamp(input.botSpeed,.15,1):1);
  if(input.action){p.charge=Math.min(1.1,p.charge+dt);accel*=.68;}
  p.vx+=d.x*accel*dt;p.vy+=d.y*accel*dt;
  if(input.action && !p.actionWasDown && p.cooldown<=0){p.attached=nearestAnchor(p,g.anchors,155);}
@@ -345,8 +366,13 @@ const gameFrame=$('#gameFrame'),endCard=$('#endCard'),introMessage=$('#introMess
 const pausedCard=$('#pausedCard'),gameToast=$('#gameToast'),statusText=$('#statusText');
 const gamepadsStatus=$('#gamepadsStatus'),tutorialCard=$('#tutorialCard');
 const countdownOverlay=$('#countdownOverlay'),countdownNumber=$('#countdownNumber');
-const humanCount=$('#humanCount');
-let game=createGame('ring',1),started=false,paused=false;
+const humanCount=$('#humanCount'),difficultySelect=$('#difficultySelect'),difficultyDescription=$('#difficultyDescription');
+const difficultyHints={
+ easy:'Lehká: boti jsou pomalejší, později reagují a méně útočí. Ideální pro první hraní.',
+ medium:'Střední: boti reagují rychleji a častěji útočí. Vyvážený souboj.',
+ hard:'Těžká: rychlí a přesní boti s častými výpady. Pro zkušené hráče.'
+};
+let game=createGame('ring',1,difficultySelect.value),started=false,paused=false;
 let lastFrame=0,accumulator=0,lastUI=0,enabledSound=true,audioCtx=null;
 let tutorialCompleted=false,tutorialStage=0,tutorialStart={x:0,y:0};
 let padSlots={0:null,1:null,2:null,3:null};
@@ -398,7 +424,7 @@ function startGame({forceTutorial=false,skipTutorial=false}={}){
  padSlots={0:null,1:null,2:null,3:null};
  if(pads.length>=requested){for(let i=0;i<requested;i++)padSlots[i]=pads[i].index;}
  else {for(let i=1;i<humans;i++)padSlots[i]=pads[i-1].index;}
- game=createGame('ring',humans);started=true;paused=false;keys.clear();accumulator=0;
+ game=createGame('ring',humans,difficultySelect.value);started=true;paused=false;keys.clear();accumulator=0;
  const needsTutorial=forceTutorial||(!tutorialCompleted&&!skipTutorial);
  game.phase=needsTutorial?'tutorial':'countdown';game.countdown=3.15;
  introMessage.classList.add('hidden');endCard.classList.add('hidden');pausedCard.classList.add('hidden');
@@ -497,6 +523,14 @@ window.addEventListener('blur',()=>keys.clear());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)keys.clear();});
 canvas.addEventListener('pointerdown',()=>canvas.focus({preventScroll:true}));
 humanCount.addEventListener('change',()=>{if(started&&!paused)canvas.focus({preventScroll:true});});
+difficultySelect.addEventListener('change',()=>{
+ const level=DIFFICULTY_SETTINGS[difficultySelect.value]?difficultySelect.value:'easy';
+ difficultyDescription.textContent=difficultyHints[level];
+ game.difficulty=level;
+ game.players.forEach(p=>{p.botThink=0;p.botHoldTime=0;p.botRestTime=.4;p.botAction=false;});
+ if(started)statusText.textContent='Obtížnost botů: '+DIFFICULTY_SETTINGS[level].label+'.';
+ if(started&&!paused)canvas.focus({preventScroll:true});
+});
 window.addEventListener('gamepadconnected',updatePadStatus);
 window.addEventListener('gamepaddisconnected',updatePadStatus);
 function keyboardInput(i){
