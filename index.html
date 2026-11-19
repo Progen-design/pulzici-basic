@@ -82,13 +82,27 @@ body.immersive-active{overflow:hidden!important;overscroll-behavior:none!importa
  .touch-device #gameFrame.immersive-mode .top-hud{top:10px;left:10px;right:118px}
 }
 @media (max-width:450px){.touch-device .mobile-expand-button{font-size:13px}.touch-device #gameFrame.immersive-mode .end-card{padding:10px 12px}}
+
+/* Mobilní režim v1.1: nezávislý na Fullscreen API. */
+html.immersive-active,body.immersive-active{height:100%!important;overflow:hidden!important;overscroll-behavior:none!important}
+.mobile-install-tip{display:none;color:#acc9d0;font-size:11px;line-height:1.5;margin:1px 0 9px;text-align:center}
+.ios-browser .mobile-install-tip{display:block}
+@media(max-width:900px){.mobile-expand-button{display:flex!important}}
+body> #gameFrame.immersive-mode{position:fixed!important;top:var(--imm-top,0px)!important;left:var(--imm-left,0px)!important;width:var(--imm-width,100vw)!important;height:var(--imm-height,100dvh)!important;max-width:none!important;max-height:none!important;z-index:2147483600!important;border:0!important;border-radius:0!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:none!important;transform:none;background:#080b1c!important;overflow:hidden!important}
+body> #gameFrame.immersive-mode canvas{display:block!important;flex:0 0 auto!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;aspect-ratio:auto!important;object-fit:fill!important;touch-action:none!important}
+body> #gameFrame.immersive-mode .immersive-controls{display:flex!important}
+body> #gameFrame.immersive-mode .top-hud{top:max(9px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:115px}
+@media (max-width:900px) and (orientation:portrait){
+ body.touch-device> #gameFrame.immersive-mode{top:var(--imm-top,0px)!important;left:calc(var(--imm-left,0px) + var(--imm-width,100vw))!important;width:var(--imm-height,100dvh)!important;height:var(--imm-width,100vw)!important;transform:rotate(90deg)!important;transform-origin:top left!important}
+ body.touch-device> #gameFrame.immersive-mode canvas{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
+}
 </style>
 </head>
 <body>
 <div class="app-shell">
 <header class="masthead">
 <div class="brand"><div aria-hidden="true" class="brand-mark"><span></span><span></span></div><div><strong>PULZÍCI BASIC<span class="brand-star">*</span></strong><small>FYZIKÁLNÍ PARTY HRA</small></div></div>
-<div class="top-right"><span class="state"><span class="pulse-dot"></span> BASIC / HRATELNÁ UKÁZKA · v1.0</span><span class="connection">BEZ ONLINE SLUŽEB</span></div>
+<div class="top-right"><span class="state"><span class="pulse-dot"></span> BASIC / HRATELNÁ UKÁZKA · v1.1</span><span class="connection">BEZ ONLINE SLUŽEB</span></div>
 </header>
 <main class="layout">
 <aside class="panel settings">
@@ -119,7 +133,8 @@ body.immersive-active{overflow:hidden!important;overscroll-behavior:none!importa
 </aside>
 <section aria-label="Herní aréna" class="play-area">
 <div class="arena-header"><div><span class="eyebrow-mini">ARÉNA / <span id="modeTitle">NÁRAZOVKA</span></span><h2>CHAOS MÁ SVÁ PRAVIDLA.</h2></div><div class="arena-actions"><button aria-label="Zapnout nebo vypnout zvuk" class="icon-button" id="soundButton" title="Vypnout zvuk">♫</button><button aria-label="Celá obrazovka" class="icon-button" id="fullscreenButton" title="Celá obrazovka">⛶</button><button aria-label="Pozastavit nebo pokračovat" class="icon-button" id="pauseButton" title="Pauza">Ⅱ</button></div></div>
-<button type="button" id="mobileExpandButton" class="mobile-expand-button">&#x26F6; ZV&#x011A;T&#x0160;IT HRU NA CEL&#x00DD; DISPLEJ</button>
+<button type="button" id="mobileExpandButton" class="mobile-expand-button">&#x26F6; ZVĚTŠIT A HRÁT</button>
+<p class="mobile-install-tip" id="mobileInstallTip">Na iPhonu: pro hraní bez lišt Safari zvol Sdílet → Přidat na plochu a hru spusť ikonou.</p>
 <div class="game-frame" id="gameFrame">
 <div aria-live="polite" class="top-hud"><div class="hud-round"><span>KOLO</span><b>01</b></div><div class="hud-time"><span>ZBÝVÁ</span><b id="timer">01:30</b></div><div class="hud-gamepad" id="gamepadsStatus">🎮 OVLADAČE: 0</div></div>
 <canvas aria-label="Hra PULZÍCI. Hráč na klávesnici používá šipky k pohybu a mezerník pro nabití a výstřel. Ostatní používají vlastní gamepady." height="680" id="gameCanvas" tabindex="0" width="1100"></canvas>
@@ -430,23 +445,57 @@ const touchTarget=$('#touchTarget'),touchGuide=$('#touchGuide');
 const touchControl={id:null,pressed:false,goal:false,x:0,y:0,startedAt:0};
 const TOUCH_HOLD_MS=300;
 let immersiveMode=false,immersiveNative=false,immersiveScrollY=0;
+let immersiveOrigin=null,immersiveAfter=null;
+const isiPhone=/iPhone|iPod/.test(navigator.userAgent);
+const standaloneMode=Boolean(navigator.standalone||window.matchMedia('(display-mode:standalone)').matches);
+document.body.classList.toggle('ios-browser',isiPhone&&!standaloneMode);
+function smallScreen(){return touchDevice||window.matchMedia('(max-width:900px)').matches;}
+function resizeImmersive(){
+ if(!immersiveMode)return;
+ const vv=window.visualViewport;
+ const width=Math.max(1,Math.round(vv?.width||window.innerWidth));
+ const height=Math.max(1,Math.round(vv?.height||window.innerHeight));
+ const left=Math.round(vv?.offsetLeft||0),top=Math.round(vv?.offsetTop||0);
+ gameFrame.style.setProperty('--imm-width',width+'px');
+ gameFrame.style.setProperty('--imm-height',height+'px');
+ gameFrame.style.setProperty('--imm-left',left+'px');
+ gameFrame.style.setProperty('--imm-top',top+'px');
+ updateTouchGuide();
+}
+window.addEventListener('resize',()=>requestAnimationFrame(resizeImmersive),{passive:true});
+window.addEventListener('orientationchange',()=>requestAnimationFrame(resizeImmersive),{passive:true});
+window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(resizeImmersive),{passive:true});
+window.visualViewport?.addEventListener('scroll',()=>requestAnimationFrame(resizeImmersive),{passive:true});
 function enterImmersive(){
- if(immersiveMode)return;
+ if(immersiveMode){resizeImmersive();return;}
  immersiveScrollY=window.scrollY;
+ immersiveOrigin=gameFrame.parentNode;
+ immersiveAfter=gameFrame.nextSibling;
  immersiveMode=true;
+ document.documentElement.classList.add('immersive-active');
  document.body.classList.add('immersive-active');
+ // Zamezení ořezu a chybných souřadnic ve WebKitu: vyjmout herní rám z vnořeného layoutu.
+ document.body.appendChild(gameFrame);
  gameFrame.classList.add('immersive-mode');
- resetTouch();
- if(gameFrame.requestFullscreen&&document.fullscreenEnabled&&window.matchMedia('(orientation:landscape)').matches){
-  try{const req=gameFrame.requestFullscreen({navigationUI:'hide'});if(req&&req.catch)req.catch(()=>{});}catch{}
+ resetTouch();resizeImmersive();
+ requestAnimationFrame(resizeImmersive);
+ // Standardní fullscreen je na iPhonu nedostupný, ale překryvný režim funguje vždy.
+ if(!isiPhone&&gameFrame.requestFullscreen&&document.fullscreenEnabled&&window.matchMedia('(orientation:landscape)').matches){
+  try{const request=gameFrame.requestFullscreen({navigationUI:'hide'});request?.catch?.(()=>{});}catch{}
  }
 }
 function exitImmersive(skipNative=false){
  if(!immersiveMode)return;
  immersiveMode=false;resetTouch();
  gameFrame.classList.remove('immersive-mode');
+ document.documentElement.classList.remove('immersive-active');
  document.body.classList.remove('immersive-active');
  if(!skipNative&&document.fullscreenElement===gameFrame&&document.exitFullscreen){document.exitFullscreen().catch(()=>{});}
+ if(immersiveOrigin){
+  if(immersiveAfter&&immersiveAfter.parentNode===immersiveOrigin)immersiveOrigin.insertBefore(gameFrame,immersiveAfter);
+  else immersiveOrigin.appendChild(gameFrame);
+ }
+ for(const key of ['--imm-width','--imm-height','--imm-left','--imm-top'])gameFrame.style.removeProperty(key);
  window.scrollTo(0,immersiveScrollY);
 }
 document.addEventListener('fullscreenchange',()=>{
@@ -466,9 +515,8 @@ function pointInWorld(e){
  const boxW=canvas.offsetWidth,boxH=canvas.offsetHeight;
  const localX=rotated?e.clientY-b.top:e.clientX-b.left;
  const localY=rotated?b.right-e.clientX:e.clientY-b.top;
- const fit=Math.min(boxW/WORLD.w,boxH/WORLD.h);
- const left=(boxW-WORLD.w*fit)/2,top=(boxH-WORLD.h*fit)/2;
- return {x:clamp((localX-left)/fit,15,WORLD.w-15),y:clamp((localY-top)/fit,15,WORLD.h-15)};
+ const scaleX=boxW/WORLD.w,scaleY=boxH/WORLD.h;
+ return {x:clamp(localX/scaleX,15,WORLD.w-15),y:clamp(localY/scaleY,15,WORLD.h-15)};
 }
 function touchPlayable(){return started&&!paused&&(game.phase==='playing'||game.phase==='tutorial')&&game.players[0].human;}
 function touchInput(p,timestamp=performance.now()){
@@ -480,9 +528,9 @@ function touchInput(p,timestamp=performance.now()){
 }
 function updateTouchGuide(){
  if(!touchDevice||!touchControl.goal)return;
- const cw=canvas.offsetWidth,ch=canvas.offsetHeight,fit=Math.min(cw/WORLD.w,ch/WORLD.h);
- const x=canvas.offsetLeft+(cw-WORLD.w*fit)/2+touchControl.x*fit;
- const y=canvas.offsetTop+(ch-WORLD.h*fit)/2+touchControl.y*fit;
+ const cw=canvas.offsetWidth,ch=canvas.offsetHeight;
+ const x=canvas.offsetLeft+touchControl.x/WORLD.w*cw;
+ const y=canvas.offsetTop+touchControl.y/WORLD.h*ch;
  touchTarget.style.left=x+'px';touchTarget.style.top=y+'px';
  const held=touchControl.pressed&&touchPlayable()&&performance.now()-touchControl.startedAt>=TOUCH_HOLD_MS;
  const charge=held?Math.min(100,Math.round(game.players[0].charge/1.1*100)):0;
@@ -608,11 +656,11 @@ function pauseToggle(force){
 }
 $('#pauseButton').addEventListener('click',()=>pauseToggle());
 $('#resumeButton').addEventListener('click',()=>pauseToggle(false));
-$('#mobileExpandButton').addEventListener('click',enterImmersive);
+$('#mobileExpandButton').addEventListener('click',()=>{enterImmersive();if(!started)startGame({skipTutorial:tutorialCompleted});});
 $('#immersiveExit').addEventListener('click',()=>exitImmersive());
 $('#immersivePause').addEventListener('click',()=>pauseToggle());
 $('#fullscreenButton').addEventListener('click',async()=>{
- if(touchDevice){if(immersiveMode)exitImmersive();else enterImmersive();return;}
+ if(smallScreen()){if(immersiveMode)exitImmersive();else{enterImmersive();if(!started)startGame({skipTutorial:tutorialCompleted});}return;}
  try{if(document.fullscreenElement)await document.exitFullscreen();else await gameFrame.requestFullscreen();canvas.focus({preventScroll:true});}
  catch{statusText.textContent='Prohlížeč nepovolil celou obrazovku.';}
 });
