@@ -135,6 +135,44 @@ body.workshop-playing .settings h1,body.workshop-playing .settings>.lead{display
 .print-sheet{display:none}.footer-note{letter-spacing:.4px}
 @media(max-width:850px){.workshop{padding:24px}.scenario-grid{grid-template-columns:1fr}.scenario-card{min-height:0;display:grid;grid-template-columns:30px 1fr;padding:18px;gap:9px 13px}.scenario-card .number{grid-row:1/4;padding-top:4px}.scenario-card b{font-size:18px}.scenario-card small,.scenario-card .selected-mark{grid-column:2}.briefing-grid{grid-template-columns:1fr}.workshop-heading{display:block}.workshop .tag{margin-top:16px}.workshop-steps{margin:22px 0}.workshop-steps li{min-width:95px;font-size:11px;padding:9px}.session-bar{align-items:start}.story-panels{grid-template-columns:1fr}.story-panel{min-height:0}}
 @media(max-width:520px){.masthead{gap:13px;padding:10px 4px 17px}.top-right .state{font-size:8px}.brand strong{font-size:21px}.brand small{font-size:8px}.experience-tabs{gap:7px}.experience-tab{flex:1;padding:12px;font-size:13px}.workshop{padding:22px 17px;border-radius:16px}.workshop h1{font-size:32px}.workshop-intro{font-size:14px}.choice-row{grid-template-columns:1fr;gap:8px;margin-bottom:23px}.choice-button{min-height:67px;padding:13px 15px}.workshop h2{font-size:20px}.workshop-steps li{min-width:calc(33.33% - 8px)}.workshop-actions>*{width:100%!important;min-width:0!important}.instruction-card{padding:19px}.instruction-card p,.instruction-card li{font-size:14px}.question{font-size:16px;padding:15px}.session-bar{display:block;padding:15px}.session-bar button{margin-top:12px}.workshop-kicker{font-size:10px}.scenario-card{padding:17px 13px}.workshop .tag{font-size:11px}}
+/* Skóre zůstává uvnitř arény i při zvětšení. Horní řada je vidět bez posouvání stránky. */
+#gameFrame{--score-top:55px;--score-height:42px}
+#scoreboard{position:absolute;z-index:5;top:var(--score-top);left:12px;right:12px;bottom:auto;max-width:760px;height:var(--score-height);margin:0 auto;padding:0;gap:7px;pointer-events:none}
+#scoreboard .player-stat{height:100%;min-height:0;flex-direction:row;padding:6px 10px;gap:8px;text-align:left;border-left:4px solid var(--player-color);background:#11162eed;box-shadow:0 3px 12px #0004;backdrop-filter:blur(8px)}
+#scoreboard .player-stat.leader{border-color:#f2d18a;border-left-color:var(--player-color);background:#3b2b40ed}
+#scoreboard .stat-name b{font-size:12px;letter-spacing:.2px;line-height:1.2}
+#scoreboard .stat-score{font-size:21px;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+#scoreboard .stat-score small{font-size:10px;font-weight:700;color:#d1c8df}
+#gameFrame .tutorial-card{top:calc(var(--score-top) + var(--score-height) + 12px)}
+#gameFrame .toast{top:calc(var(--score-top) + var(--score-height) + 10px)}
+#gameFrame.immersive-mode,#gameFrame:fullscreen{--score-top:calc(max(12px,env(safe-area-inset-top)) + 52px)}
+#gameFrame.immersive-mode #scoreboard,#gameFrame:fullscreen #scoreboard{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right))}
+.workshop-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0 12px}
+.workshop-results.single{grid-template-columns:minmax(0,700px)}
+.round-result{padding:20px;border:1px solid #74618a;border-radius:14px;background:#18172b}
+.round-result h3{font-size:18px;color:#fff;margin:0 0 8px}
+.round-winner{margin:0 0 15px;color:#a7f4dc;font-size:14px;line-height:1.5}
+.round-result .result-ranking{margin:0;gap:6px}
+.round-result .result-ranking>div{padding:10px 12px;font-size:14px;gap:12px}
+.round-result .result-ranking strong{font-size:18px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.result-player{display:flex;align-items:center;gap:8px;min-width:0}
+.result-dot{display:inline-block;width:12px;height:12px;flex:none;border-radius:5px;border:1px solid #ffffff45}
+.result-control{font-size:10px;color:#c0b4d0;margin-left:4px}
+.results-note{margin:0 0 20px;color:#c0b3cf;font-size:12px;line-height:1.5}
+@media(max-width:650px){.workshop-results,.workshop-results.single{grid-template-columns:1fr}.round-result{padding:16px}.round-result .result-ranking>div{font-size:12px}.result-control{display:none}}
+@media(max-width:520px){
+ #gameFrame{--score-top:35px;--score-height:32px}
+ #gameFrame.immersive-mode,#gameFrame:fullscreen{--score-top:calc(max(12px,env(safe-area-inset-top)) + 50px)}
+ #scoreboard{left:6px;right:6px;gap:4px}
+ #scoreboard .player-stat{padding:4px 5px;gap:3px;border-left-width:3px;border-radius:7px}
+ #scoreboard .stat-name b{font-size:9px;letter-spacing:0}
+ #scoreboard .stat-score{font-size:16px}
+ #scoreboard .stat-score small{display:none;font-size:8px}
+ #gameFrame.immersive-mode #scoreboard .stat-score small,#gameFrame:fullscreen #scoreboard .stat-score small{display:inline}
+}
+@media(max-width:900px) and (orientation:portrait){
+ body.touch-device>#gameFrame.immersive-mode #scoreboard{left:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-bottom))}
+}
 @media print{
  @page{size:A4 portrait;margin:15mm}
  html,body{background:#fff!important;color:#111!important;margin:0!important;height:auto!important;overflow:visible!important}
@@ -147,7 +185,7 @@ body.workshop-playing .settings h1,body.workshop-playing .settings>.lead{display
 <div class="app-shell">
 <header class="masthead">
 <div class="brand"><div aria-hidden="true" class="brand-mark"><span></span><span></span></div><div><strong>PULZÍCI<span class="brand-star">*</span></strong><small>ZAHRAJ SI SVŮJ PŘÍBĚH</small></div></div>
-<div class="top-right"><span class="state"><span class="pulse-dot"></span> TVŮRČÍ DÍLNA · v1.2</span><span class="connection">BEZ REGISTRACE</span></div>
+<div class="top-right"><span class="state"><span class="pulse-dot"></span> TVŮRČÍ DÍLNA · v1.2.1</span><span class="connection">BEZ REGISTRACE</span></div>
 </header>
 <nav class="experience-tabs" aria-label="Způsob hraní"><button type="button" class="experience-tab" id="workshopTab" aria-pressed="true">Tvůrčí dílna</button><button type="button" class="experience-tab" id="freePlayTab" aria-pressed="false">Volná hra</button></nav>
 <section class="workshop" id="workshop" aria-label="Průvodce tvůrčí dílnou"><div id="workshopContent"></div></section>
@@ -185,6 +223,7 @@ body.workshop-playing .settings h1,body.workshop-playing .settings>.lead{display
 <p class="mobile-install-tip" id="mobileInstallTip">Na iPhonu: pro hraní bez lišt Safari zvol Sdílet → Přidat na plochu a hru spusť ikonou.</p>
 <div class="game-frame" id="gameFrame">
 <div class="top-hud"><div class="hud-round"><span>KOLO</span><b id="roundLabel">01</b></div><div class="hud-time"><span>ZBÝVÁ</span><b id="timer">01:30</b></div><div class="hud-gamepad" id="gamepadsStatus">🎮 OVLADAČE: 0</div></div>
+<div aria-label="Průběžné skóre všech čtyř Pulzíků" class="scoreboard" id="scoreboard"></div>
 <canvas aria-label="Hra PULZÍCI. Hráč na klávesnici používá šipky k pohybu a mezerník pro nabití a výstřel. Ostatní používají vlastní gamepady." height="680" id="gameCanvas" tabindex="0" width="1100"></canvas>
 <div aria-hidden="true" class="touch-target hidden" id="touchTarget"></div>
 <div class="immersive-controls" id="immersiveControls"><button id="immersivePause" type="button" aria-label="Pauza" title="Pauza">&#x2161;</button><button id="immersiveExit" type="button" aria-label="Zavřít celou obrazovku" title="Zavřít">&#x00D7;</button></div>
@@ -210,7 +249,6 @@ body.workshop-playing .settings h1,body.workshop-playing .settings>.lead{display
 <div aria-live="assertive" class="end-card hidden" id="endCard"><span class="result-strap">KONEC ZÁPASU</span><h3 id="winnerTitle">VÍTĚZ!</h3><p id="resultSummary"></p><div class="result-ranking" id="resultRanking"></div><button class="primary-button" id="playAgainButton">↻ OKAMŽITÁ ODVETA ↗</button></div>
 <div class="paused-card hidden" id="pausedCard"><h3>PAUZA</h3><p>Stiskni Esc nebo klikni na Pokračovat.</p><button class="primary-button" id="resumeButton">POKRAČOVAT ▶</button></div>
 </div>
-<div aria-label="Průběžné skóre" class="scoreboard" id="scoreboard"></div>
 <div class="touch-guide" id="touchGuide">KLEPNI DO ARÉNY = POHYB · PODRŽ = NABÍJENÍ · PUSŤ = VÝSTŘEL</div>
 <div class="bottom-strip"><div><span class="indicator"></span> <span id="statusText">Připraveno na zábavnou odvetu</span></div><div class="controls-text">KLÁVESNICE <b>ŠIPKY + MEZERNÍK</b> <i> / </i> DALŠÍ HRÁČI <b>VLASTNÍ GAMEPAD – PÁČKA + A</b></div></div>
 </section>
@@ -494,7 +532,7 @@ const WORKSHOP_SCENARIOS=Object.freeze([
  {id:'mood',title:'Nálada mění příběh',summary:'Zahrajte tentýž příběh vesele a napínavě. Co změní hlas?',observe:'Najdi okamžik, který ti připadá vtipný nebo napínavý. Co se v něm stalo?',second:'Zkus si představit stejnou situaci s jinou náladou.',reflect:'Jak lze stejnou událost vyprávět vesele a napínavě? Co udělá hlas, tempo a pauza?',create:'Nakreslete tři scény. Příběh vyprávějte jednou jako komedii a podruhé napínavě. Zkuste změnit hlas a tempo.',solo:'Nakresli tři scény. Příběh vyprávěj jednou jako komedii a podruhé napínavě. Zkus změnit hlas a tempo.'}
 ]);
 let experience='workshop';
-const workshopState={mode:'family',scenario:'perspectives',stage:'setup',round:1,transitioning:false};
+const workshopState={mode:'family',scenario:'perspectives',stage:'setup',round:1,transitioning:false,results:[]};
 let lastFreeHumanCount='1',pendingExperience=null,switchWasPaused=false;
 function currentScenario(){return WORKSHOP_SCENARIOS.find(s=>s.id===workshopState.scenario)||WORKSHOP_SCENARIOS[0];}
 function familyWorkshop(){return workshopState.mode==='family';}
@@ -644,7 +682,7 @@ function soundEffect(entry){
 }
 function playSounds(){for(const sound of game.sounds.splice(0,14))soundEffect(sound);}
 function startGame({forceTutorial=false,skipTutorial=false}={}){
- if(experience==='workshop'&&!workshopRoundActive())return;
+ if(experience==='workshop'&&(!workshopRoundActive()||workshopState.transitioning))return;
  const requested=workshopRoundActive()?1:clamp(Number(humanCount.value)||1,1,4);
  const pads=connectedPads(),humans=Math.min(requested,1+pads.length);
  padSlots={0:null,1:null,2:null,3:null};
@@ -922,12 +960,37 @@ function draw(g,time){
 function fmtScore(v,mode){return mode==='hill'?String(Math.floor(v)):String(Math.round(v));}
 function controlLabel(p){
   if(!p.human)return 'BOT';
+  if(touchDevice&&p.id===0)return 'DOTYK';
   try {
     const slot=padSlots[p.id];
     const pad=slot===null?null:navigator.getGamepads?.()[slot];
     if(p.id===0)return pad?.connected?'KLÁVESNICE / OVLADAČ':'KLÁVESNICE';
     return pad?.connected?'OVLADAČ':'BOT – ODPOJENO';
   } catch {return 'BOT – ODPOJENO';}
+}
+function playerLabel(p){return p.human?`P${p.id+1}`:`BOT ${p.id+1}`;}
+function rankedPlayers(players){
+ const sorted=[...players].sort((a,b)=>b.score-a.score||a.id-b.id);
+ let rank=0;
+ return sorted.map((p,index)=>{
+  if(index===0||p.score!==sorted[index-1].score)rank=index+1;
+  return {...p,rank};
+ });
+}
+function scoreWords(score){return `${score} ${score===1?'bod':score>=2&&score<=4?'body':'bodů'}`;}
+function resultRowsMarkup(players){
+ return rankedPlayers(players).map(p=>`<div class="${p.rank===1?'champion':''}"><span class="result-player"><span class="result-dot" style="background:${p.color}" aria-hidden="true"></span><span>${p.rank}. ${p.label||playerLabel(p)}<small class="result-control">${p.control||controlLabel(p)}</small></span></span><strong>${p.score} b.</strong></div>`).join('');
+}
+function workshopResultsMarkup(){
+ if(!workshopState.results.length)return '';
+ const rounds=[...workshopState.results].sort((a,b)=>b.round-a.round);
+ const cards=rounds.map(result=>{
+  const sorted=rankedPlayers(result.players),leaders=sorted.filter(p=>p.rank===1);
+  const names=leaders.map(p=>p.label).join(', ');
+  const summary=`${leaders.length>1?'Remíza na 1. místě':'Vítěz'}: ${names} · ${scoreWords(sorted[0].score)}`;
+  return `<section class="round-result" aria-label="Výsledky ${result.round}. kola"><h3>Výsledky ${result.round}. kola</h3><p class="round-winner">${summary}</p><div class="result-ranking">${resultRowsMarkup(result.players)}</div></section>`;
+ }).join('');
+ return `<div class="workshop-results ${rounds.length===1?'single':''}">${cards}</div><p class="results-note">Každé kolo má vlastní skóre. ${familyWorkshop()?'P1 ovládá vždy právě hrající člověk; po prvním kole se role vymění.':'Ve druhém kole začínáš znovu od nuly.'}</p>`;
 }
 function renderHUD(){
  $('#roundLabel').textContent=workshopRoundActive()?`${workshopState.round} / 2`:'01';
@@ -937,7 +1000,7 @@ function renderHUD(){
  const top=Math.max(...game.players.map(p=>p.score));
  scoreboard.innerHTML=game.players.map(p=>{
   const leader=top>0&&p.score===top;
-  return `<div class="player-stat ${leader?'leader':''}"><div class="player-avatar" style="background:${p.color}"></div><div class="stat-name"><b>${leader?'👑 ':''}PULZÍK ${p.id+1}</b><small>${controlLabel(p)}</small></div><b class="stat-score">${Math.round(p.score)} <small style="font-size:9px">b.</small></b></div>`;
+  return `<div class="player-stat ${leader?'leader':''}" style="--player-color:${p.color}" aria-label="${playerLabel(p)}, Pulzík ${p.id+1}, ${controlLabel(p)}, ${scoreWords(Math.round(p.score))}"><div class="stat-name"><b>${playerLabel(p)}</b></div><b class="stat-score">${Math.round(p.score)} <small>b.</small></b></div>`;
  }).join('');
  gameToast.textContent=game.bannerTimer>0?game.banner:'';
  gameToast.classList.toggle('visible',game.bannerTimer>0&&started&&!paused&&game.phase==='playing');
@@ -949,7 +1012,7 @@ function showResult(){
  const sorted=[...game.players].sort((a,b)=>b.score-a.score);
  $('#winnerTitle').textContent=game.winner;
  $('#resultSummary').textContent=game.winner==='REMÍZA'?`Dva nebo více Pulzíků mají ${sorted[0].score} bodů. Rozhodne odveta!`:`Nejvíce bodů: ${sorted[0].score}. Chceš zkusit odvetu?`;
- $('#resultRanking').innerHTML=sorted.map((p,index)=>`<div class="${index===0?'champion':''}"><span>${index===0?'🏆 ':''}${index+1}. Pulzík ${p.id+1}</span><strong>${p.score} b.</strong></div>`).join('');
+ $('#resultRanking').innerHTML=resultRowsMarkup(sorted);
  endCard.classList.remove('hidden');countdownOverlay.classList.add('hidden');
  statusText.textContent='Zápas skončil. Jedno kliknutí a hraje se znovu.';
 }
@@ -984,6 +1047,7 @@ function renderWorkshop(focus=true){
  }else{
   const titles={briefing:s.title,swap:family?'Teď si vyměňte role':'Druhý pokus s novým plánem',reflect:family?'Co jste ve hře objevili?':'Co jsi ve hře objevil?',story:family?'Vytvořte svůj příběh':'Vytvoř svůj příběh',done:family?'Podělte se o svůj příběh':'Představ svůj příběh'};
   content=`<p class="workshop-kicker">${family?'HRAJEME SPOLU':'HRAJU SÁM'} · ${s.title}</p><h2 id="workshopTitle" tabindex="-1">${titles[stage]}</h2>${workshopSteps()}`;
+  if(['swap','reflect','story','done'].includes(stage))content+=workshopResultsMarkup();
   if(stage==='briefing'){
    content+=`<div class="briefing-grid"><div class="instruction-card warm"><h3>Na co se v prvním kole zaměřit</h3><p>${s.observe}</p><p><strong>Každé kolo trvá 90 sekund.</strong> Hra je inspirací pro příběh. Není potřeba vyhrát.</p></div><div class="instruction-card"><h3>${family?'Domluvte si role':'Tvůj plán'}</h3>${family?'<ol><li><strong>Hráč</strong> ovládá jednoho Pulzíka.</li><li><strong>Pozorovatel</strong> sleduje zajímavý okamžik a může pomoci radou.</li><li>Po prvním kole si role <strong>vyměníte</strong>.</li></ol>':'<p>Nejprve si řekni, čeho si chceš ve hře všimnout. Po prvním kole dostaneš prostor zkusit jiný plán.</p>'}<p style="margin-top:14px">Na počítači použij šipky a mezerník, na telefonu klepnutí a podržení prstu. Ovládání si můžeš nejdřív nacvičit.</p></div></div><div class="workshop-actions">${workshopButton('round','Spustit první kolo →')}${workshopButton('setup','Zpět na výběr',true)}</div>`;
   }else if(stage==='swap'){
@@ -1009,6 +1073,8 @@ function beginWorkshopRound(second=false){
 }
 async function finishWorkshopRound(){
  if(workshopState.transitioning||!workshopRoundActive())return;
+ // Kopie dat zůstane zachovaná, i když další kolo vytvoří nové herní postavy.
+ workshopState.results[workshopState.round-1]={round:workshopState.round,players:game.players.map(p=>({id:p.id,color:p.color,human:p.human,score:Math.round(p.score),label:playerLabel(p),control:controlLabel(p)}))};
  workshopState.transitioning=true;started=false;paused=false;keys.clear();resetTouch();
  tutorialCard.classList.add('hidden');countdownOverlay.classList.add('hidden');endCard.classList.add('hidden');pausedCard.classList.add('hidden');
  await exitImmersive();
@@ -1019,7 +1085,7 @@ async function switchExperience(next){
  if(experience==='free')lastFreeHumanCount=humanCount.value;
  started=false;paused=false;keys.clear();resetTouch();
  await exitImmersive();
- experience=next;workshopState.stage='setup';workshopState.round=1;workshopState.transitioning=false;
+ experience=next;workshopState.stage='setup';workshopState.round=1;workshopState.transitioning=false;workshopState.results=[];
  game=createGame('ring',1,difficultySelect.value);accumulator=0;
  introMessage.classList.remove('hidden');endCard.classList.add('hidden');pausedCard.classList.add('hidden');tutorialCard.classList.add('hidden');countdownOverlay.classList.add('hidden');
  $('#startButton').textContent='▶ VYZKOUŠET A HRÁT';statusText.textContent='Připraveno na hru';renderHUD();renderWorkshop();

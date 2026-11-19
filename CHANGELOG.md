@@ -1,3 +1,13 @@
+# Změny ve verzi 1.2.1
+
+Datum přípravy: 19. listopadu 2026.
+
+- Průběžné skóre všech čtyř postav je přesunuté přímo do arény pod časovač. Je součástí rámu při nativním fullscreen i rozšířeném zobrazení a nezachytává ovládací dotyky.
+- Po prvním i druhém kole dílny se zobrazují body a pořadí všech postav. Výsledky obou kol jsou samostatné a zůstávají dostupné při reflexi, tvorbě i dokončení.
+- Nová kola začínají od nuly. Restart rozehraného kola nemění výsledek předchozího kola; nová aktivita historii vyčistí. Data zůstávají pouze v paměti stránky.
+- Remízy mají společné pořadí a všechny vítězné postavy jsou označené také ve volné hře.
+- Automatizované kontroly jsou rozšířené o výsledky, remízy, zachování historie a restarty. Rozsah skutečného browserového ověření je v `TEST_REPORT.md`.
+
 # Změny ve verzi 1.2
 
 Datum přípravy: 19. listopadu 2026.

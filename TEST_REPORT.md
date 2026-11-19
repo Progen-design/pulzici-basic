@@ -1,4 +1,29 @@
-# Ověření pracovní verze PULZÍCI 1.2
+# Ověření opravy PULZÍCI 1.2.1
+
+Datum: 19. listopadu 2026. Níže jsou výsledky kontrol při přípravě opravy zobrazení skóre.
+
+## Automatizované kontroly opravy
+
+**Prošlo 18/18 skupin testů skutečného aplikačního skriptu v Node VM s testovací atrapou DOM. Prošla kontrola syntaxe JavaScriptu a struktury HTML.** V HTML je právě jeden scoreboard a je potomkem gameFrame; všech 58 ID je jedinečných.
+
+Nově se ověřuje:
+
+- Čtyři stabilní identity v živém skóre a sdílené pořadí při remízách 1, 1, 3, 4 i 1, 1, 1, 1.
+- Skóre prvního kola 5, 5, 2, 0 se uloží samostatně a nezmění se při změně živých hráčů ani po zrušeném přepnutí aktivity.
+- Druhé kolo i jeho restart začínají od nuly a zachovávají pouze dokončené první kolo.
+- Skóre druhého kola 1, 4, 4, 2 se uchová odděleně. Oba přehledy se vykreslují při reflexi, tvorbě i dokončení.
+- Nová výzva a přepnutí na volnou hru vyčistí výsledky; rozehrané restarty nevytvářejí další položky historie.
+- Volná hra při remíze správně označuje všechny postavy na prvním místě.
+
+Původní kontroly průvodce, pohybu, výstřelu, pauzy, restartu a fullscreen logiky nadále procházejí. Testy ověřují aplikační chování; CSS, skutečné dotyky a fyzické ovladače tím nejsou potvrzené.
+
+## Prohlížeč a zařízení
+
+Při předchozím nasazení verze 1.2 byly ve veřejné aplikaci přes cloudový Chrome ověřeny načtení úvodu, příprava výzvy, spuštění nácviku, zvětšení arény a návrat. Původní omezení lokálního Playwright zůstává uvedené níže. Oprava 1.2.1 vyžaduje následnou kontrolu viditelnosti nového HUD a výsledků na veřejné stránce; tento soubor zachycuje stav před jejím nasazením.
+
+Skutečný Safari na iPhonu, Chrome na Androidu, používané gamepady a rodinný pilot zůstávají otevřené přejímací kontroly.
+
+# Historické ověření při přípravě PULZÍCI 1.2
 
 Datum: 19. listopadu 2026.
 
