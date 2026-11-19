@@ -1,6 +1,6 @@
 # PULZÍCI Zahraj si svůj příběh
 
-Pracovní verze 1.2 pro Juniorfest. Jedna fyzikální aréna Nárazovka je doplněna průvodcem pro rodinnou tvůrčí dílnu. Volná hra zůstává dostupná samostatně.
+Pracovní verze 1.2.1 pro Juniorfest. Jedna fyzikální aréna Nárazovka je doplněna průvodcem pro rodinnou tvůrčí dílnu. Volná hra zůstává dostupná samostatně.
 
 ## Co je součástí aplikace
 
@@ -9,9 +9,11 @@ Pracovní verze 1.2 pro Juniorfest. Jedna fyzikální aréna Nárazovka je dopln
 - Klávesnice pro jednoho hráče; další místní hráči používají vlastní gamepady. Chybějící ovladače zastupují boti.
 - Dotykové ovládání jednoho hráče proti botům: klepnutí určí cíl, podržení nabíjí, puštění vystřelí.
 - Herní nácvik, pauza, zvuk, restart a odveta ve volné hře.
+- Průběžné body všech čtyř Pulzíků přímo v aréně pod časovačem, také při zvětšení a na celé obrazovce.
 - Tvůrčí dílna ve variantách **Hrajeme spolu** a **Hraju sám**.
 - Tři scénáře: **Jeden okamžik, dva pohledy**, **Změň konec příběhu**, **Nálada mění příběh**.
 - Dvě herní kola po 90 sekundách, výměna rolí nebo nový plán, reflexe, tvorba tříobrázkového příběhu na papíře a jeho představení.
+- Po každém kole přehled bodů a pořadí včetně remíz. Výsledky obou kol zůstávají dostupné při navazujícím tvoření; kola se nesčítají, protože se mohou střídat hráči.
 - Tisk jednoduchého pracovního listu přímo z obrazovky tvorby nebo dokončení.
 - Bez účtů, backendu, online multiplayeru, zadávání jmen nebo ukládání dětských příběhů.
 
@@ -34,6 +36,7 @@ Ve scénáři **Změň konec příběhu** vzniká pomoc a domluva postav až v t
 - Herní rám lze zavřít křížkem. Po dokončení kola dílny se aplikace vrátí k pokynům v běžné orientaci stránky.
 - Při opuštění okna nebo skrytí stránky se rozehraná hra pozastaví. Pokračování je výslovné.
 - Restart v dílně opakuje právě probíhající kolo; nevynechává další kroky.
+- Každé kolo začíná na nule. Restart nerozšiřuje historii o nedohrané kolo. Výsledky jsou jen v paměti této aktivity; nová výzva nebo potvrzené přepnutí je vymaže.
 - Přepnutí z rozehrané aktivity vyžaduje potvrzení. Po znovunačtení stránky se dílna otevírá od začátku.
 
 `manifest.webmanifest` má orientaci `any`, aby čtení a tvoření nebylo nuceně otočené. Přidání na plochu a chování lišt závisí na prohlížeči a zařízení. Není přítomen service worker, proto nelze slibovat offline dostupnost webové instalace po pouhém načtení stránky. Místní HTML na PC je samostatné.
@@ -63,7 +66,7 @@ Připravené browserové testy vyžadují Python, Playwright a Chromium v `/usr/
 python3 tests/test_workshop.py
 ```
 
-Browserový test se v prostředí přípravy nemohl spustit kvůli systémovému zákazu vytvoření socketu. Nejsou proto doloženy vizuální ani end-to-end výsledky. Přesný stav uvádí `TEST_REPORT.md`. Před předáním do provozu je nutné ověřit skutečný Safari na iPhonu, Chrome na Androidu, Chrome/Edge na Windows a používané gamepady.
+Lokální automatizovaný browserový test se v prostředí přípravy nemohl spustit kvůli systémovému zákazu vytvoření socketu. Ve veřejné verzi 1.2 byly následně přes cloudový Chrome ověřeny načtení stránky, příprava výzvy, spuštění nácviku, zvětšení arény a návrat. Přesný rozsah ověření nové verze 1.2.1 uvádí `TEST_REPORT.md`. Skutečný Safari na iPhonu, Chrome na Androidu, Chrome/Edge na cílovém Windows a používané gamepady zůstávají k přejímacímu ověření.
 
 ## Původ verze
 
