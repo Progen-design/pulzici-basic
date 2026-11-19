@@ -1,3 +1,11 @@
+# Změny ve verzi 1.2.2
+
+Datum přípravy: 19. listopadu 2026.
+
+- Opravena časomíra při nízké snímkové frekvenci. Odpočet a 90sekundové kolo používají skutečný aktivní čas, fyzika zachovává původní krok a limit výpočtů.
+- Pauza ani doba skrytí stránky se do kola nezapočítávají. Přibyly cílené kontroly 1 FPS a návratu po 30sekundové pauze bez animačních snímků.
+- Viditelné skóre a výsledky kol z verze 1.2.1 zůstávají zachované.
+
 # Změny ve verzi 1.2.1
 
 Datum přípravy: 19. listopadu 2026.

@@ -185,7 +185,7 @@ body.workshop-playing .settings h1,body.workshop-playing .settings>.lead{display
 <div class="app-shell">
 <header class="masthead">
 <div class="brand"><div aria-hidden="true" class="brand-mark"><span></span><span></span></div><div><strong>PULZÍCI<span class="brand-star">*</span></strong><small>ZAHRAJ SI SVŮJ PŘÍBĚH</small></div></div>
-<div class="top-right"><span class="state"><span class="pulse-dot"></span> TVŮRČÍ DÍLNA · v1.2.1</span><span class="connection">BEZ REGISTRACE</span></div>
+<div class="top-right"><span class="state"><span class="pulse-dot"></span> TVŮRČÍ DÍLNA · v1.2.2</span><span class="connection">BEZ REGISTRACE</span></div>
 </header>
 <nav class="experience-tabs" aria-label="Způsob hraní"><button type="button" class="experience-tab" id="workshopTab" aria-pressed="true">Tvůrčí dílna</button><button type="button" class="experience-tab" id="freePlayTab" aria-pressed="false">Volná hra</button></nav>
 <section class="workshop" id="workshop" aria-label="Průvodce tvůrčí dílnou"><div id="workshopContent"></div></section>
@@ -466,7 +466,6 @@ function stepGame(g,inputs=[],dt=1/60){
  if(g.phase!=='playing'&&g.phase!=='tutorial')return;
  dt=clamp(dt,0,1/25);g.t+=dt;
  const training=g.phase==='tutorial';
- if(!training)g.remaining=Math.max(0,g.remaining-dt);
  decayEffects(g,dt);
  g.players.forEach((p,i)=>{
   if(training){if(i===0){
@@ -500,12 +499,14 @@ function stepGame(g,inputs=[],dt=1/60){
   updateModes(g,dt);
  }
  g.players.forEach(p=>springNodes(p,dt));
- if(!training&&g.remaining<=1e-6){g.remaining=0;
-  g.phase='ended';
-  const sorted=[...g.players].sort((a,b)=>b.score-a.score);
-  g.winner=sorted[0].score===sorted[1].score?'REMÍZA':`VÍTĚZÍ PULZÍK ${sorted[0].id+1}!`;
-  g.sounds.push({kind:'finish'});
- }
+}
+function finalizeMatch(g){
+ if(g.phase!=='playing'||g.remaining>1e-6)return false;
+ g.remaining=0;g.phase='ended';
+ const sorted=[...g.players].sort((a,b)=>b.score-a.score);
+ g.winner=sorted[0].score===sorted[1].score?'REMÍZA':`VÍTĚZÍ PULZÍK ${sorted[0].id+1}!`;
+ g.sounds.push({kind:'finish'});
+ return true;
 }
 
 const $=sel=>document.querySelector(sel);
@@ -996,7 +997,7 @@ function renderHUD(){
  $('#roundLabel').textContent=workshopRoundActive()?`${workshopState.round} / 2`:'01';
  if(game.phase==='tutorial')timer.textContent='NÁCVIK';
  else if(game.phase==='countdown')timer.textContent='00:03';
- else timer.textContent=`${String(Math.floor(game.remaining/60)).padStart(2,'0')}:${String(Math.ceil(game.remaining%60)).padStart(2,'0')}`;
+ else {const seconds=Math.ceil(game.remaining);timer.textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
  const top=Math.max(...game.players.map(p=>p.score));
  scoreboard.innerHTML=game.players.map(p=>{
   const leader=top>0&&p.score===top;
@@ -1130,17 +1131,19 @@ $('#workshopContent').addEventListener('click',e=>{
 });
 function loop(timestamp){
  if(!lastFrame)lastFrame=timestamp;
- const dt=clamp((timestamp-lastFrame)/1000,0,.08);lastFrame=timestamp;
+ const elapsed=Math.max(0,(timestamp-lastFrame)/1000),dt=clamp(elapsed,0,.08);lastFrame=timestamp;
  if(started&&!paused){
   if(game.phase==='playing'||game.phase==='tutorial'){
-   accumulator+=dt;let ticks=0;
+   accumulator+=game.phase==='playing'?Math.min(dt,game.remaining):dt;let ticks=0;
    while(accumulator>=1/60&&ticks<5){
     stepGame(game,pollInputs(),1/60);accumulator-=1/60;ticks++;
     if(game.phase==='tutorial')progressTutorial();
    }
+   // Hodiny měří skutečný čas; omezený krok zůstává pouze pro stabilní fyziku.
+   if(game.phase==='playing'){game.remaining=Math.max(0,game.remaining-elapsed);finalizeMatch(game);}
    if(game.phase==='ended')showResult();
   }else if(game.phase==='countdown'){
-   const before=Math.min(3,Math.ceil(game.countdown));game.countdown=Math.max(0,game.countdown-dt);
+   const before=Math.min(3,Math.ceil(game.countdown));game.countdown=Math.max(0,game.countdown-elapsed);
    const now=Math.min(3,Math.ceil(game.countdown));
    if(now<before&&now>0)game.sounds.push({kind:'tick'});
    countdownNumber.textContent=String(Math.max(1,now));
