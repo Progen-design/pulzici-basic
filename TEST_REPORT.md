@@ -1,3 +1,16 @@
+# Ověření opravy PULZÍCI 1.2.2
+
+Datum: 19. listopadu 2026.
+
+**20/20 skupin Node VM testů a kontrola syntaxe JavaScriptu prošly.** K ověření skóre přibyly dva regresní testy:
+
+- Při jednom animačním snímku za sekundu úvodní odpočet běží podle skutečného času a kolo skončí po 90 sekundách aktivní hry. Fyzikální výpočet za snímek zůstává omezený původním limitem.
+- Třicetisekundová pauza bez jediného animačního snímku se po pokračování neodečte ze zbývajícího času.
+
+Při následném testu veřejné verze 1.2.1 byly v cloudovém Chrome vizuálně potvrzeny čtyři čitelné bodové ukazatele pod časovačem v běžné i zvětšené aréně. Skóre při hraní průběžně rostlo. Stejná struktura a CSS jsou zachované ve verzi 1.2.2.
+
+Tento test současně odhalil starší chybu časomíry při nízkém FPS. Oprava odděluje skutečný čas kola od omezeného času fyzikální simulace. Lokální Playwright, skutečné mobilní přístroje a fyzické gamepady tím nejsou ověřené.
+
 # Ověření opravy PULZÍCI 1.2.1
 
 Datum: 19. listopadu 2026. Níže jsou výsledky kontrol při přípravě opravy zobrazení skóre.

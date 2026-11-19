@@ -1,6 +1,6 @@
 # PULZÍCI Zahraj si svůj příběh
 
-Pracovní verze 1.2.1 pro Juniorfest. Jedna fyzikální aréna Nárazovka je doplněna průvodcem pro rodinnou tvůrčí dílnu. Volná hra zůstává dostupná samostatně.
+Pracovní verze 1.2.2 pro Juniorfest. Jedna fyzikální aréna Nárazovka je doplněna průvodcem pro rodinnou tvůrčí dílnu. Volná hra zůstává dostupná samostatně.
 
 ## Co je součástí aplikace
 
@@ -35,6 +35,7 @@ Ve scénáři **Změň konec příběhu** vzniká pomoc a domluva postav až v t
 - Mobil: klepnutí na arénu, podržení a puštění. Tlačítko zvětšení používá rozšířené zobrazení i tam, kde není nativní fullscreen dostupný.
 - Herní rám lze zavřít křížkem. Po dokončení kola dílny se aplikace vrátí k pokynům v běžné orientaci stránky.
 - Při opuštění okna nebo skrytí stránky se rozehraná hra pozastaví. Pokračování je výslovné.
+- Čas kola i úvodní odpočet běží podle skutečně uplynulého aktivního času, i při pomalém vykreslování. Pauza se do času kola nezapočítává.
 - Restart v dílně opakuje právě probíhající kolo; nevynechává další kroky.
 - Každé kolo začíná na nule. Restart nerozšiřuje historii o nedohrané kolo. Výsledky jsou jen v paměti této aktivity; nová výzva nebo potvrzené přepnutí je vymaže.
 - Přepnutí z rozehrané aktivity vyžaduje potvrzení. Po znovunačtení stránky se dílna otevírá od začátku.
@@ -66,7 +67,7 @@ Připravené browserové testy vyžadují Python, Playwright a Chromium v `/usr/
 python3 tests/test_workshop.py
 ```
 
-Lokální automatizovaný browserový test se v prostředí přípravy nemohl spustit kvůli systémovému zákazu vytvoření socketu. Ve veřejné verzi 1.2 byly následně přes cloudový Chrome ověřeny načtení stránky, příprava výzvy, spuštění nácviku, zvětšení arény a návrat. Přesný rozsah ověření nové verze 1.2.1 uvádí `TEST_REPORT.md`. Skutečný Safari na iPhonu, Chrome na Androidu, Chrome/Edge na cílovém Windows a používané gamepady zůstávají k přejímacímu ověření.
+Lokální automatizovaný browserový test se v prostředí přípravy nemohl spustit kvůli systémovému zákazu vytvoření socketu. Ve veřejné verzi 1.2 byly následně přes cloudový Chrome ověřeny načtení stránky, příprava výzvy, spuštění nácviku, zvětšení arény a návrat; ve verzi 1.2.1 také viditelné a průběžně aktualizované skóre v běžné i zvětšené aréně. Přesný rozsah ověření verze 1.2.2 uvádí `TEST_REPORT.md`. Skutečný Safari na iPhonu, Chrome na Androidu, Chrome/Edge na cílovém Windows a používané gamepady zůstávají k přejímacímu ověření.
 
 ## Původ verze
 
